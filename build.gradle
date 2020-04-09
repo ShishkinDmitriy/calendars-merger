@@ -1,0 +1,43 @@
+plugins {
+  id 'java'
+}
+
+sourceCompatibility = 1.11
+
+group 'ru.shishkin'
+version '1.0.0-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  cucumberRuntime {
+    extendsFrom testImplementation
+  }
+}
+
+dependencies {
+  annotationProcessor 'org.projectlombok:lombok:1.18.12'
+  testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+  testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.15.0'
+  testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.3'
+  testImplementation 'io.cucumber:cucumber-java8:5.6.0'
+}
+
+test {
+  useJUnitPlatform()
+}
+
+task cucumber() {
+  dependsOn assemble, compileTestJava
+  doLast {
+    javaexec {
+      main = "io.cucumber.core.cli.Main"
+      classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+      jvmArgs = ['-ea']
+      args = ['--plugin', 'pretty', '--glue', 'ru.shishkin.calendars', 'src/test/resources', '--strict']
+    }
+  }
+}
